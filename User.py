@@ -32,9 +32,8 @@ session = Session()  # its instance
 
 def user_exists(email, phone):
     try:
-        # Query the database to see if a user with the given email or phone exists
-        existing_user = session.query(User).filter((User.email == email) | (User.phone == phone)).one()
-        return True
+        existing_user = session.query(User).filter(User.email == email).one()
+        return existing_user.email == email
     except NoResultFound:
         return False
 
@@ -46,4 +45,4 @@ def add_user(email, phone, password, name, city):
         session.commit()
         return 200
     else:
-        return 201  #? User already exists
+        return 201  # ? User already exists
