@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, HTTPException, Request, Response
-from User import add_user, login, print_all, update
+from User import add_user, login, print_all, update, get_user
 from auth import AuthHandler
 
 app = FastAPI()
@@ -35,6 +35,17 @@ async def update_user_info(request: Request):
     data = await request.json()
     update(user_username, data)
     return Response(status_code=200)
+
+
+@app.get("/auth/users/me")
+def user_info(request: Request):
+    authorization_header = request.headers.get("Authorization")
+    if not authorization_header or not authorization_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
+    token = authorization_header.split("Bearer ")[1]
+    username = auth_handler.decode_token(token)
+    return get_user(username)
+
 
 if __name__ == '__main__':
     print_all()

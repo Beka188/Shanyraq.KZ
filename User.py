@@ -64,6 +64,8 @@ def user_exists(email):
     return session.query(User).filter(User.email == email).count() > 0
 
 
+def get_user(email):
+    return session.query(User).filter(User.email == email).first()
 def update(username, data: _json):
     user_data = session.query(User).filter(User.email == username).first()
     for key, value in data.items():
