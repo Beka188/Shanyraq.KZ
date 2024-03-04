@@ -1,13 +1,9 @@
-from fastapi import FastAPI, Form, HTTPException, Request
-from User import add_user, login, print_all
+from fastapi import FastAPI, Form, HTTPException, Request, Response
+from User import add_user, login, print_all, update
 from auth import AuthHandler
 
 app = FastAPI()
 auth_handler = AuthHandler()
-
-class LoginRequest:
-    username: str
-    password: str
 
 
 @app.post("/auth/users")
@@ -29,8 +25,16 @@ def user_login(username: str = Form(...), password: str = Form(...)):
         raise HTTPException(status_code=401, detail="Wrong password or email")
 
 
+@app.patch("/auth/users/me")
+async def update_user_info(request: Request):
+    authorization_header = request.headers.get("Authorization")
+    if not authorization_header or not authorization_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
+    token = authorization_header.split("Bearer ")[1]
+    user_username = auth_handler.decode_token(token)
+    data = await request.json()
+    update(user_username, data)
+    return Response(status_code=200)
+
 if __name__ == '__main__':
     print_all()
-
-
-

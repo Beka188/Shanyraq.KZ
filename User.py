@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Column, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import bcrypt
+import _json
 
 Base = declarative_base()
 
@@ -61,3 +62,10 @@ def login(email, password):
 
 def user_exists(email):
     return session.query(User).filter(User.email == email).count() > 0
+
+
+def update(username, data: _json):
+    user_data = session.query(User).filter(User.email == username).first()
+    for key, value in data.items():
+        setattr(user_data, key, value)
+    session.commit()
