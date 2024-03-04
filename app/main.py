@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, HTTPException, Request, Response
-from User import add_user, login, print_all, update, get_user
+from User import add_user, login, print_all, update, get_user, delete_all_data
 from auth import AuthHandler
 
 app = FastAPI()
@@ -48,4 +48,9 @@ def user_info(request: Request):
 
 
 if __name__ == '__main__':
+    add_user("esil@.com", "8705", "password", "Beka", "Astana")
+    add_user("hghg@.com", "+8842", "password", "Arman", "Pavlodar")
+    add_user("tora@.com", "9021", "password", "Maksat", "Almaty")
+    print(get_user("tora@.com"))
     print_all()
+
