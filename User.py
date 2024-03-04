@@ -1,9 +1,9 @@
-from sqlalchemy import create_engine, ForeignKey, Column, String
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import create_engine, Column, String
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+import bcrypt
 
 Base = declarative_base()
-
 
 class User(Base):
     __tablename__ = "users"
@@ -16,33 +16,48 @@ class User(Base):
     def __init__(self, email, phone, password, name, city):
         self.email = email
         self.phone = phone
-        self.password = password
+        self.password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         self.name = name
         self.city = city
 
     def __repr__(self):
-        return f"{self.email}\n{self.phone}\n{self.password}\n{self.name}\n{self.city}"
+        return f"{self.email} {self.phone} {self.password} {self.name} {self.city}"
 
-
-engine = create_engine("sqlite:///ShanyraqDB.db", echo=True)
-Base.metadata.create_all(bind=engine)  # creates table(s)
-Session = sessionmaker(bind=engine)  # class
-session = Session()  # its instance
-
-
-def user_exists(email, phone):
-    try:
-        existing_user = session.query(User).filter(User.email == email).one()
-        return existing_user.email == email
-    except NoResultFound:
-        return False
-
-
+    def verify_password(self, password):
+        return bcrypt.checkpw(password.encode(), self.password.encode('utf-8'))
 def add_user(email, phone, password, name, city):
-    user = User(email, phone, password, name, city)
-    if not user_exists(email, phone):
+    if not user_exists(email):
+        user = User(email, phone, password, name, city)
         session.add(user)
         session.commit()
         return 200
     else:
-        return 201  # ? User already exists
+        return 201  # User already exists
+
+engine = create_engine("sqlite:///ShanyraqDB.db", echo=True)
+Base.metadata.create_all(bind=engine)
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+
+def print_all():
+    print("PRINTING:\n\n")
+    users = session.query(User).all()
+    print(len(users))
+    for user in users:
+        print(user.__repr__())
+# session.query(User).delete()
+# session.commit()
+
+def login(email, password):
+    user = session.query(User).filter(User.email == email).first()
+    if user:
+        return user.verify_password(password)
+    return False
+
+def user_exists(email):
+    return session.query(User).filter(User.email == email).count() > 0
+
+
+
