@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Form, HTTPException, Request
 from User import add_user, login, print_all
-
+from auth import AuthHandler
 
 app = FastAPI()
-
+auth_handler = AuthHandler()
 
 class LoginRequest:
     username: str
@@ -23,7 +23,8 @@ def sign_up(email: str = Form(...), phone: str = Form(...), password: str = Form
 @app.post("/auth/users/login")
 def user_login(username: str = Form(...), password: str = Form(...)):
     if login(username, password):
-        return 200  # also jwt token
+        jwt_token = auth_handler.encode_token(username)
+        return {"access_token": jwt_token}
     else:
         raise HTTPException(status_code=401, detail="Wrong password or email")
 
