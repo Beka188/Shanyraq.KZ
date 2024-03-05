@@ -7,7 +7,7 @@ from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
 from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
 from UpdateUser import UpdateUserInfo, UpdateAd
-from comment import add_comment, com, print_all_comments
+from comment import add_comment, com, print_all_comments, get_comments
 app = FastAPI()
 auth_handler = AuthHandler()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -92,10 +92,15 @@ def post_comment(ad_id: int, content: com, token: Annotated[str, Depends(oauth2_
     if not ad:
         raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
     username = auth_handler.decode_token(token)
+    user = get_user(username)
     data = content.dict()
-    add_comment(data, username, ad_id)
+    add_comment(data, user["id"], ad_id)
     return Response(status_code=200)
 
+
+@app.get("/shanyraks/{id}/comments")
+def get_comments_fastapi(ad_id: int):
+    return {"comments": get_comments(ad_id)}
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")
@@ -105,3 +110,4 @@ if __name__ == '__main__':
     print_all()
     print_all_ad()
     print_all_comments()
+    get_comments(1)
