@@ -1,6 +1,9 @@
+from typing import Annotated
+
 import jwt
-from fastapi import HTTPException, Security
-from fastapi.security import HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import HTTPException, Security, Depends
+from fastapi.security import HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer, \
+    OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from User import *
@@ -40,3 +43,15 @@ class AuthHandler:
         return self.decode_token(auth.credentials)
 
 
+auth_handler = AuthHandler()
+
+
+def login_jwt(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    user = login(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password"
+        )
+    jwt_token = auth_handler.encode_token(form_data.username)
+    return {"access_token": jwt_token}

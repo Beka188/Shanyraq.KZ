@@ -1,3 +1,4 @@
+
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -50,9 +51,8 @@ session = Session()
 def print_all():
     print("PRINTING ALL:\n\n")
     users = session.query(User).all()
-    print(len(users))
     for user in users:
-        print(user.__repr__())
+        print(user)
 
 
 def login(email, password):
@@ -78,6 +78,7 @@ def get_user(email):
         }
     return None
 
+
 def update(username, data: _json):
     user_data = session.query(User).filter(User.email == username).first()
     for key, value in data.items():
@@ -88,3 +89,4 @@ def update(username, data: _json):
 def delete_all_data():
     session.query(User).delete()
     session.commit()
+
