@@ -7,7 +7,7 @@ from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
 from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
 from UpdateUser import UpdateUserInfo, UpdateAd
-
+from comment import add_comment, com, print_all_comments
 app = FastAPI()
 auth_handler = AuthHandler()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -72,7 +72,9 @@ def update_ad_info(id: int, token: Annotated[str, Depends(oauth2_scheme)], updat
         raise HTTPException(status_code=403, detail="You are not allowed to delete this advertisement")
     elif not updated:
         raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
-    return 200
+    return Response(status_code=200)
+
+
 @app.delete("/shanyraks/{id}")
 def delete_ad(id: int, token: Annotated[str, Depends(oauth2_scheme)]):
     username = auth_handler.decode_token(token)
@@ -81,7 +83,18 @@ def delete_ad(id: int, token: Annotated[str, Depends(oauth2_scheme)]):
         raise HTTPException(status_code=403, detail="You are not allowed to delete this advertisement")
     if not deleted:
         raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
-    return 200
+    return Response(status_code=200)
+
+
+@app.post("/shanyraks/{id}/comments")
+def post_comment(ad_id: int, content: com, token: Annotated[str, Depends(oauth2_scheme)]):
+    ad = get_ad_by_id(ad_id)
+    if not ad:
+        raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
+    username = auth_handler.decode_token(token)
+    data = content.dict()
+    add_comment(data, username, ad_id)
+    return Response(status_code=200)
 
 
 if __name__ == '__main__':
@@ -91,3 +104,4 @@ if __name__ == '__main__':
     # print(get_user("tora@.com"))
     print_all()
     print_all_ad()
+    print_all_comments()
