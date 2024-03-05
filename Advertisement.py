@@ -1,3 +1,5 @@
+import _json
+
 from sqlalchemy import create_engine, Column, String, Integer, Float
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -57,22 +59,36 @@ def add_advertisement(user, data: Addd):
 
 def get_ad(ad_id: int):
     ad = session.query(Advertisement).get(ad_id)
-    user = get_user(ad.user)
-    return {
-        "id": ad.id,
-        "type": ad.type,
-        "price": ad.price,
-        "address": ad.address,
-        "rooms_count": ad.rooms_count,
-        "description": ad.description,
-        "user_id": user["id"],
-    }
+    if ad:
+        user = get_user(ad.user)
+        return {
+            "id": ad.id,
+            "type": ad.type,
+            "price": ad.price,
+            "address": ad.address,
+            "rooms_count": ad.rooms_count,
+            "description": ad.description,
+            "user_id": user["id"],
+        }
+
 
 
 def print_all_ad():
     ads = session.query(Advertisement).all()
     for ad in ads:
         print(ad)
+
+
+def update_add(ad_id: int, username, data: dict):
+    ad = session.query(Advertisement).get(ad_id)
+    if ad:
+        if ad.user != username:
+            return -1
+        for key, value in data.items():
+            setattr(ad, key, value)
+        session.commit()
+        return 1
+    return 0
 
 
 def delete_add(ad_id: int, username):

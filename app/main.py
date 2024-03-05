@@ -5,8 +5,8 @@ from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add
-from UpdateUser import UpdateUserInfo
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
+from UpdateUser import UpdateUserInfo, UpdateAd
 
 app = FastAPI()
 auth_handler = AuthHandler()
@@ -63,6 +63,16 @@ def get_ad_by_id(ad_id: int):
         raise HTTPException(status_code=404, detail=f"The ad with id {ad_id} doesn't exist")
 
 
+@app.patch("/shanyraks/{id}")
+def update_ad_info(id: int, token: Annotated[str, Depends(oauth2_scheme)], update_data: UpdateAd):
+    username = auth_handler.decode_token(token)
+    data = update_data.dict(exclude_unset=True)
+    updated = update_add(id, username, data)
+    if updated == -1:
+        raise HTTPException(status_code=403, detail="You are not allowed to delete this advertisement")
+    elif not updated:
+        raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
+    return 200
 @app.delete("/shanyraks/{id}")
 def delete_ad(id: int, token: Annotated[str, Depends(oauth2_scheme)]):
     username = auth_handler.decode_token(token)
