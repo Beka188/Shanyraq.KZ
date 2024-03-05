@@ -3,11 +3,9 @@ from typing import Annotated, Optional
 
 from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from starlette import status
-
-from User import add_user, login, print_all, update, get_user, delete_all_data
+from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add
 from UpdateUser import UpdateUserInfo
 
 app = FastAPI()
@@ -57,12 +55,24 @@ def add_ad(token: Annotated[str, Depends(oauth2_scheme)], ad: Addd):
 
 
 @app.get("/shanyraks/{id}")
-def get_ad_by_id(id: int):
-    ad = get_ad(id)
+def get_ad_by_id(ad_id: int):
+    ad = get_ad(ad_id)
     if ad:
         return ad
     else:
+        raise HTTPException(status_code=404, detail=f"The ad with id {ad_id} doesn't exist")
+
+
+@app.delete("/shanyraks/{id}")
+def delete_ad(id: int, token: Annotated[str, Depends(oauth2_scheme)]):
+    username = auth_handler.decode_token(token)
+    deleted = delete_add(id, username)
+    if deleted == -1:
+        raise HTTPException(status_code=403, detail="You are not allowed to delete this advertisement")
+    if not deleted:
         raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
+    return 200
+
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")

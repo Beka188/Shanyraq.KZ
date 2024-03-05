@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from User import get_user
 
+
 class Addd(BaseModel):
     type: str
     price: int
@@ -72,3 +73,14 @@ def print_all_ad():
     ads = session.query(Advertisement).all()
     for ad in ads:
         print(ad)
+
+
+def delete_add(ad_id: int, username):
+    ad = session.query(Advertisement).get(ad_id)
+    if ad:
+        if ad.user != username:
+            return -1
+        session.delete(ad)
+        session.commit()
+        return 1
+    return 0
