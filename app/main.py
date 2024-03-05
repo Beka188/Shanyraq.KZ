@@ -7,20 +7,13 @@ from starlette import status
 
 from User import add_user, login, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
-from Advertisement import add_advertisement, print_all_ad, Advertisement
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad
 from UpdateUser import UpdateUserInfo
-from pydantic import BaseModel
+
 app = FastAPI()
 auth_handler = AuthHandler()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-class Addd(BaseModel):
-    tip: str
-    price: int
-    address: str
-    area: float
-    rooms_count: int
-    description: str
 
 @app.post("/auth/users/login")
 def user_login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
@@ -58,23 +51,23 @@ def user_info(token: Annotated[str, Depends(oauth2_scheme)]):
 
 @app.post("/shanyraks")
 def add_ad(token: Annotated[str, Depends(oauth2_scheme)], ad: Addd):
-    # authorization_header = request.headers.get("Authorization")
-    # if not authorization_header or not authorization_header.startswith("Bearer "):
-    #     raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
-    # token = authorization_header.split("Bearer ")[1]
     username = auth_handler.decode_token(token)
-    # data = ad.json()
     ad_id = add_advertisement(username, ad)
     return {"id": ad_id}
 
+
+@app.get("/shanyraks/{id}")
+def get_ad_by_id(id: int):
+    ad = get_ad(id)
+    if ad:
+        return ad
+    else:
+        raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")
     # add_user("hghg@.com", "+8842", "password", "Arman", "Pavlodar")
     # add_user("tora@.com", "9021", "password", "Maksat", "Almaty")
     # print(get_user("tora@.com"))
-    # print_all()
+    print_all()
     print_all_ad()
-
-
-

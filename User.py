@@ -49,7 +49,6 @@ session = Session()
 
 
 def print_all():
-    print("PRINTING ALL:\n\n")
     users = session.query(User).all()
     for user in users:
         print(user)
