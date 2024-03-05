@@ -2,6 +2,13 @@ from sqlalchemy import create_engine, Column, String, Integer, Float
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import _json
+class Addd:
+    tip: str
+    price: int
+    address: str
+    area: float
+    rooms_count: int
+    description: str
 
 Base = declarative_base()
 
@@ -36,7 +43,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def add_advertisement(user, data: _json):
+def add_advertisement(user, data: Addd):
     ad = Advertisement(user, data.tip, data.price, data.address, data.area, data.rooms_count, data.description)
     session.add(ad)
     session.commit()

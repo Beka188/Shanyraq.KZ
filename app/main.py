@@ -7,13 +7,20 @@ from starlette import status
 
 from User import add_user, login, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
-from Advertisement import add_advertisement, print_all_ad
+from Advertisement import add_advertisement, print_all_ad, Advertisement
 from UpdateUser import UpdateUserInfo
-
+from pydantic import BaseModel
 app = FastAPI()
 auth_handler = AuthHandler()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+class Addd(BaseModel):
+    tip: str
+    price: int
+    address: str
+    area: float
+    rooms_count: int
+    description: str
 
 @app.post("/auth/users/login")
 def user_login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
@@ -50,14 +57,14 @@ def user_info(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 @app.post("/shanyraks")
-def add_ad(request: Request):
-    authorization_header = request.headers.get("Authorization")
-    if not authorization_header or not authorization_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
-    token = authorization_header.split("Bearer ")[1]
+def add_ad(token: Annotated[str, Depends(oauth2_scheme)], ad: Addd):
+    # authorization_header = request.headers.get("Authorization")
+    # if not authorization_header or not authorization_header.startswith("Bearer "):
+    #     raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
+    # token = authorization_header.split("Bearer ")[1]
     username = auth_handler.decode_token(token)
-    data = request.json()
-    ad_id = add_advertisement(username, data)
+    # data = ad.json()
+    ad_id = add_advertisement(username, ad)
     return {"id": ad_id}
 
 
