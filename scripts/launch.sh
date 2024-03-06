@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+UVICORN_PATH=/Users/lawliet/NFactorial/ShanyraqKZ/venv/bin/uvicorn
+
 # Set defaults if not provided in environment
 : "${MODULE_NAME:=app.main}"
 : "${VARIABLE_NAME:=app}"
@@ -8,8 +10,9 @@
 : "${PORT:=8000}"
 
 # Start uvicorn with live-reload
-uvicorn \
+$UVICORN_PATH \
     --proxy-headers \
     --host "$HOST" \
     --port "$PORT" \
     "$APP_MODULE"
+
