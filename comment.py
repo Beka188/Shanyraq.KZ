@@ -61,22 +61,18 @@ def to_json(comment):
 def update_comment(comment_id, username, ad_id, updated_info):
     current_ad = get_ad(ad_id)
     current_user = get_user(username)
-    print("\n\n\n")
-    print(current_user, current_ad)
     if current_ad and current_user:
-        print(current_ad["user_id"], current_user["id"], sep="  _____  ")
-         # user_id doesn't match with ad
-        current_comment = session.query(Comment).get(comment_id)
+        current_comment = session.query(Comment).filter(Comment.advertisement_id == current_ad["id"] and Comment.id == comment_id).one()
         if current_comment and current_comment.author_id != current_user["id"]:
             return -1
-        print(current_comment)
         if current_comment:
             current_comment.content = updated_info
-
             session.commit()
             return 1
     return 0
 
+
+# def delete_comment()
 
 def print_all_comments():
     comments = session.query(Comment).all()
