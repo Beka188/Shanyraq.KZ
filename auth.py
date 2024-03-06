@@ -4,7 +4,6 @@ import jwt
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer, \
     OAuth2PasswordRequestForm
-from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from User import *
 
