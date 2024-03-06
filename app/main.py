@@ -7,7 +7,7 @@ from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
 from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
 from UpdateUser import UpdateUserInfo, UpdateAd
-from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment
+from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
 
 app = FastAPI()
 auth_handler = AuthHandler()
@@ -57,7 +57,8 @@ def add_ad(token: Annotated[str, Depends(oauth2_scheme)], ad: Addd):
 
 @app.get("/shanyraks/{id}")
 def get_ad_by_id(ad_id: int):
-    ad = get_ad(ad_id)
+    count = total_comments(ad_id)
+    ad = get_ad(ad_id, count)
     if ad:
         return ad
     else:
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     # add_user("hghg@.com", "+8842", "password", "Arman", "Pavlodar")
     # add_user("tora@.com", "9021", "password", "Maksat", "Almaty")
     # print(get_user("tora@.com"))
-    print_all()
-    print_all_ad()
+    # print_all()
+    # print_all_ad()
     print_all_comments()
-    get_comments(1)
+    # get_comments(1)

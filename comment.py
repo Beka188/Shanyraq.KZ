@@ -88,6 +88,9 @@ def delete_comment(ad_id, comment_id, username):
             return 1
     return 0
 
+
+def total_comments(ad_id):
+    return session.query(Comment).filter(Comment.advertisement_id == ad_id).count()
 def print_all_comments():
     comments = session.query(Comment).all()
     for com in comments:

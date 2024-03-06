@@ -55,7 +55,7 @@ def add_advertisement(user, data: Addd):
     return ad.id
 
 
-def get_ad(ad_id: int):
+def get_ad(ad_id: int, count=0):
     ad = session.query(Advertisement).get(ad_id)
     if ad:
         user = get_user(ad.user)
@@ -67,8 +67,8 @@ def get_ad(ad_id: int):
             "rooms_count": ad.rooms_count,
             "description": ad.description,
             "user_id": user["id"],
+            "total_comments": count
         }
-
 
 
 def print_all_ad():
