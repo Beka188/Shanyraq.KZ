@@ -62,7 +62,7 @@ def update_comment(comment_id, username, ad_id, updated_info):
     current_ad = get_ad(ad_id)
     current_user = get_user(username)
     if current_ad and current_user:
-        current_comment = session.query(Comment).filter(Comment.advertisement_id == current_ad["id"] and Comment.id == comment_id).one()
+        current_comment = session.query(Comment).filter(Comment.advertisement_id == current_ad["id"], Comment.id == comment_id).one()
         if current_comment and current_comment.author_id != current_user["id"]:
             return -1
         if current_comment:
@@ -72,7 +72,21 @@ def update_comment(comment_id, username, ad_id, updated_info):
     return 0
 
 
-# def delete_comment()
+def delete_comment(ad_id, comment_id, username):
+    current_ad = get_ad(ad_id)
+    current_user = get_user(username)
+    if current_ad and current_user:
+        print("\n\n")
+        print(comment_id, current_ad)
+        print("\n\n")
+        current_comment = session.query(Comment).filter(Comment.advertisement_id == current_ad["id"], Comment.id == comment_id).one()
+        if current_comment and current_comment.author_id != current_user["id"]:
+            return -1
+        if current_comment:
+            session.delete(current_comment)
+            session.commit()
+            return 1
+    return 0
 
 def print_all_comments():
     comments = session.query(Comment).all()

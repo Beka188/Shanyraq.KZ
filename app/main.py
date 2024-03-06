@@ -7,7 +7,7 @@ from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt
 from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
 from UpdateUser import UpdateUserInfo, UpdateAd
-from comment import add_comment, com, print_all_comments, get_comments, update_comment
+from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment
 
 app = FastAPI()
 auth_handler = AuthHandler()
@@ -114,6 +114,15 @@ def update_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_sc
     return Response(status_code=200)
 
 
+@app.delete("/shanyraks/{id}/comments/{comment_id}")
+def delete_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_scheme)]):
+    username = auth_handler.decode_token(token)
+    deleted = delete_comment(id, comment_id, username)
+    if deleted == -1:
+        raise HTTPException(status_code=403, detail="You are not allowed to delete this comment")
+    elif deleted == 0:
+        raise HTTPException(status_code=404, detail=f"Doesn't exist")
+    return Response(status_code=200)
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")
