@@ -1,10 +1,12 @@
 from typing import Annotated
 
-import jwt
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer, \
     OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
+
+import jwt
+
 from User import *
 
 
