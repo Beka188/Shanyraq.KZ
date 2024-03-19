@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import reflection
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
-
+from AdvertisementSearch import AdvertisementSearch
 from User import get_user
 
 
@@ -164,3 +164,31 @@ def delete_fav(username, ad_id):
         session.commit()
         return 1
     return 0
+
+
+def search_advertisements(search: AdvertisementSearch):
+    query = session.query(Advertisement)
+    if search.type:
+        query = query.filter(Advertisement.type == search.type)
+    if search.rooms_count:
+        query = query.filter(Advertisement.rooms_count == search.rooms_count)
+    if search.price_from:
+        query = query.filter(Advertisement.price >= search.price_from)
+    if search.price_until:
+        query = query.filter(Advertisement.price <= search.price_until)
+
+    total = query.count()
+    advertisements = query.order_by(Advertisement.id.desc()).offset(search.offset).limit(search.limit).all()
+
+    return {"total": total, "objects": [add_filter(ad) for ad in advertisements]}
+
+
+def add_filter(ad):
+    return {
+        "id": ad.id,
+        "type": ad.type,
+        "price": ad.price,
+        "address": ad.address,
+        "area": ad.area,
+        "rooms_count": ad.rooms_count
+    }

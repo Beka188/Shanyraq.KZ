@@ -1,15 +1,15 @@
 import _json
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends, status, Path
+from fastapi import FastAPI, Form, HTTPException, Response, Depends, Path, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from starlette.responses import JSONResponse
-
-from User import add_user, print_all, update, get_user, delete_all_data
+from AdvertisementSearch import AdvertisementSearch
+from User import add_user, update, get_user
 from auth import AuthHandler, login_jwt, unauthorized
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite, fav_list, delete_fav
+from Advertisement import add_advertisement, Addd, get_ad, delete_add, update_add, add_to_favorite, fav_list, \
+    delete_fav, search_advertisements
 from UpdateUser import UpdateUserInfo, UpdateAd
-from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
+from comment import add_comment, com, get_comments, update_comment, delete_comment, total_comments
 
 app = FastAPI()
 auth_handler = AuthHandler()
@@ -132,7 +132,8 @@ def delete_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_sc
 
 
 @app.post("/auth/users/favorites/shanyraks/{id}")
-def add_favorite(token: Annotated[str, Depends(oauth2_scheme)], id: int = Path(..., description="The ID of the advertisement to add to favorites")):
+def add_favorite(token: Annotated[str, Depends(oauth2_scheme)],
+                 id: int = Path(..., description="The ID of the advertisement to add to favorites")):
     username = auth_handler.decode_token(token)
     user_id = get_user(username)["id"]
     if get_ad(id):
@@ -150,12 +151,21 @@ def get_favorite_list(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 @app.delete("/auth/users/favorites/shanyraks/{id}")
-def delete_from_fav_list(token:Annotated[str, Depends(oauth2_scheme)], id: int = Path(..., description="Id of the ad that you want to delete from the favorite list")):
+def delete_from_fav_list(token: Annotated[str, Depends(oauth2_scheme)], id: int = Path(...,
+                                                                                       description="Id of the ad that you want to delete from the favorite list")):
     username = auth_handler.decode_token(token)
     if delete_fav(username, id):
         return {"message": "Successfully deleted!"}
     else:
         raise HTTPException(status_code=404, detail=f"Ad with such id and/or user_id doesn't exist")
+
+
+@app.get("/shanyraks")
+def search(limit: int = Query(10, ge=1, le=100), offset: int = Query(0, ge=0), type: Optional[str] = None,
+           rooms_count: Optional[int] = None, price_from: Optional[int] = None, price_until: Optional[int] = None):
+    search_parameters = AdvertisementSearch(limit=limit, offset=offset, type=type, rooms_count=rooms_count,
+                                            price_from=price_from, price_until=price_until)
+    return search_advertisements(search_parameters)
 
 
 if __name__ == '__main__':
@@ -168,4 +178,8 @@ if __name__ == '__main__':
     # print_all_fav()
     # print_all_comments()
     # get_comments(1)
-    print(fav_list("esil@.com"))
+    # print(fav_list("esil@.com"))
+    search = AdvertisementSearch()
+    search.type = "sell"
+    search.rooms_count = 2
+    print(search_advertisements(search))
