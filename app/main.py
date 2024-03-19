@@ -1,10 +1,12 @@
 import _json
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends
+from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from starlette.responses import JSONResponse
+
 from User import add_user, print_all, update, get_user, delete_all_data
-from auth import AuthHandler, login_jwt
+from auth import AuthHandler, login_jwt, unauthorized
 from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
 from UpdateUser import UpdateUserInfo, UpdateAd
 from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
@@ -36,6 +38,8 @@ def sign_up(email: str = Form(...), phone: str = Form(...), password: str = Form
 
 @app.patch("/auth/users/me")
 async def update_user_info(update_data: UpdateUserInfo, token: str = Depends(oauth2_scheme)):
+    if not token:
+        return Response(status_code=403, content="Token is missing")
     user_username = auth_handler.decode_token(token)
     data = update_data.dict(exclude_unset=True)
     update(user_username, data)
@@ -71,7 +75,7 @@ def update_ad_info(id: int, token: Annotated[str, Depends(oauth2_scheme)], updat
     data = update_data.dict(exclude_unset=True)
     updated = update_add(id, username, data)
     if updated == -1:
-        raise HTTPException(status_code=403, detail="You are not allowed to delete this advertisement")
+        return unauthorized()
     elif not updated:
         raise HTTPException(status_code=404, detail=f"The ad with id {id} doesn't exist")
     return Response(status_code=200)
@@ -104,6 +108,7 @@ def post_comment(ad_id: int, content: com, token: Annotated[str, Depends(oauth2_
 def get_comments_fastapi(ad_id: int):
     return {"comments": get_comments(ad_id)}
 
+
 @app.patch("/shanyraks/{id}/comments/{comment_id}")
 def update_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_scheme)], content: com):
     username = auth_handler.decode_token(token)
@@ -124,6 +129,10 @@ def delete_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_sc
     elif deleted == 0:
         raise HTTPException(status_code=404, detail=f"Doesn't exist")
     return Response(status_code=200)
+
+
+
+
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")

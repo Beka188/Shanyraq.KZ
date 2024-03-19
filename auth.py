@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import HTTPException, Security, Depends
+from fastapi import HTTPException, Security, Depends, status
 from fastapi.security import HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer, \
     OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
@@ -38,7 +38,7 @@ class AuthHandler:
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Signature has expired")
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            return unauthorized()
 
     def auth_wrapper(self, auth: HTTPAuthorizationCredentials = Security(security)):
         return self.decode_token(auth.credentials)
@@ -56,3 +56,11 @@ def login_jwt(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         )
     jwt_token = auth_handler.encode_token(form_data.username)
     return {"access_token": jwt_token}
+
+
+async def unauthorized():
+    raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
