@@ -84,6 +84,7 @@ def get_ad(ad_id: int, count=0):
             "user_id": user["id"],
             "total_comments": count
         }
+    return None
 
 
 def print_all_ad():
@@ -137,3 +138,17 @@ def add_to_favorite(user_id: int, ad_id: int):
     session.commit()
     return 1
 
+
+def fav_list(user_email):
+    user_id = get_user(user_email)["id"]
+
+    f_list = session.query(Favorite).filter(user_id == Favorite.user_id).all()
+    return [to_json(fav) for fav in f_list]
+
+def to_json(favorite):
+    ad_id = favorite.ad_id
+    address = get_ad(ad_id)
+    return {
+        "id": favorite.id,
+        "address": address["address"]
+    }

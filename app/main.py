@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt, unauthorized
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite, fav_list
 from UpdateUser import UpdateUserInfo, UpdateAd
 from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
 
@@ -140,8 +140,13 @@ def add_favorite(token: Annotated[str, Depends(oauth2_scheme)], id: int = Path(.
         if added:
             return {"message": "Advertisement added to favorites"}
     else:
-        raise HTTPException(status_code=404, detail=f"Ad with such id doesn't exist")
+        raise HTTPException(status_code=404, detail=f"Ad with id: {id} doesn't exist")
 
+
+@app.get("/auth/users/favorites/shanyraks")
+def get_favorite_list(token: Annotated[str, Depends(oauth2_scheme)]):
+    username = auth_handler.decode_token(token)
+    return {"shanyraks": fav_list(username)}
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")
@@ -149,7 +154,8 @@ if __name__ == '__main__':
     # add_user("tora@.com", "9021", "password", "Maksat", "Almaty")
     # print(get_user("tora@.com"))
     # print_all()
-    print_all_ad()
+    # print_all_ad()
     # print_all_fav()
     # print_all_comments()
     # get_comments(1)
+    print(fav_list("esil@.com"))
