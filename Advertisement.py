@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, Column, String, Integer, Float
+from sqlalchemy import create_engine, Column, String, Integer, Float, ForeignKeyConstraint, MetaData, Table
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import reflection
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
 
@@ -42,6 +43,20 @@ class Advertisement(Base):
         return f"{self.id} {self.user} {self.type} {self.address} {self.area} {self.rooms_count} {self.description}"
 
 
+class Favorite(Base):
+    __tablename__ = "Favorites"
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    user_id = Column("user_id", Integer)
+    ad_id = Column("ad_id", Integer)
+
+    __table_args__ = (
+        ForeignKeyConstraint(['user_id'], ['ads.id']),
+        ForeignKeyConstraint(['ad_id'], ['ads.id']),
+    )
+    def __init__(self, user_id, ad_id):
+        self.user_id = user_id
+        self.ad_id = ad_id
+
 engine = create_engine("sqlite:///Advertisements.db", echo=True)
 Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
@@ -72,9 +87,25 @@ def get_ad(ad_id: int, count=0):
 
 
 def print_all_ad():
-    ads = session.query(Advertisement).all()
-    for ad in ads:
-        print(ad)
+    inspector = reflection.Inspector.from_engine(engine)
+
+    # Get the table names
+    table_names = inspector.get_table_names()
+
+    print("Tables in the database:")
+    for table_name in table_names:
+        print(table_name)
+
+    # Get the data from each table
+    for table_name in table_names:
+        print(f"Data in table '{table_name}':")
+        metadata = MetaData()
+        table = Table(table_name, metadata, autoload_with=engine)
+        with engine.connect() as connection:
+            result = connection.execute(table.select())
+            for row in result.fetchall():
+                print(row)
+
 
 
 def update_add(ad_id: int, username, data: dict):
@@ -98,3 +129,11 @@ def delete_add(ad_id: int, username):
         session.commit()
         return 1
     return 0
+
+
+def add_to_favorite(user_id: int, ad_id: int):
+    new_favorite_item = Favorite(user_id, ad_id)
+    session.add(new_favorite_item)
+    session.commit()
+    return 1
+

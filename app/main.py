@@ -1,13 +1,13 @@
 import _json
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends, status
+from fastapi import FastAPI, Form, HTTPException, Request, Response, Depends, status, Path
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette.responses import JSONResponse
 
 from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt, unauthorized
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite
 from UpdateUser import UpdateUserInfo, UpdateAd
 from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
 
@@ -131,7 +131,16 @@ def delete_com(id: int, comment_id: int, token: Annotated[str, Depends(oauth2_sc
     return Response(status_code=200)
 
 
-
+@app.post("/auth/users/favorites/shanyraks/{id}")
+def add_favorite(token: Annotated[str, Depends(oauth2_scheme)], id: int = Path(..., description="The ID of the advertisement to add to favorites")):
+    username = auth_handler.decode_token(token)
+    user_id = get_user(username)["id"]
+    if get_ad(id):
+        added = add_to_favorite(user_id, id)
+        if added:
+            return {"message": "Advertisement added to favorites"}
+    else:
+        raise HTTPException(status_code=404, detail=f"Ad with such id doesn't exist")
 
 
 if __name__ == '__main__':
@@ -140,6 +149,7 @@ if __name__ == '__main__':
     # add_user("tora@.com", "9021", "password", "Maksat", "Almaty")
     # print(get_user("tora@.com"))
     # print_all()
-    # print_all_ad()
-    print_all_comments()
+    print_all_ad()
+    # print_all_fav()
+    # print_all_comments()
     # get_comments(1)
