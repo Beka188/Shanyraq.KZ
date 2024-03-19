@@ -53,9 +53,11 @@ class Favorite(Base):
         ForeignKeyConstraint(['user_id'], ['ads.id']),
         ForeignKeyConstraint(['ad_id'], ['ads.id']),
     )
+
     def __init__(self, user_id, ad_id):
         self.user_id = user_id
         self.ad_id = ad_id
+
 
 engine = create_engine("sqlite:///Advertisements.db", echo=True)
 Base.metadata.create_all(bind=engine)
@@ -108,7 +110,6 @@ def print_all_ad():
                 print(row)
 
 
-
 def update_add(ad_id: int, username, data: dict):
     ad = session.query(Advertisement).get(ad_id)
     if ad:
@@ -145,10 +146,21 @@ def fav_list(user_email):
     f_list = session.query(Favorite).filter(user_id == Favorite.user_id).all()
     return [to_json(fav) for fav in f_list]
 
+
 def to_json(favorite):
     ad_id = favorite.ad_id
     address = get_ad(ad_id)
     return {
-        "id": favorite.id,
+        "id": ad_id,
         "address": address["address"]
     }
+
+
+def delete_fav(username, ad_id):
+    user_id = get_user(username)["id"]
+    fav_ad = session.query(Favorite).filter(Favorite.user_id == user_id, Favorite.ad_id == ad_id).one()
+    if fav_ad:
+        session.delete(fav_ad)
+        session.commit()
+        return 1
+    return 0

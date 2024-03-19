@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 from User import add_user, print_all, update, get_user, delete_all_data
 from auth import AuthHandler, login_jwt, unauthorized
-from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite, fav_list
+from Advertisement import add_advertisement, print_all_ad, Addd, get_ad, delete_add, update_add, add_to_favorite, fav_list, delete_fav
 from UpdateUser import UpdateUserInfo, UpdateAd
 from comment import add_comment, com, print_all_comments, get_comments, update_comment, delete_comment, total_comments
 
@@ -147,6 +147,16 @@ def add_favorite(token: Annotated[str, Depends(oauth2_scheme)], id: int = Path(.
 def get_favorite_list(token: Annotated[str, Depends(oauth2_scheme)]):
     username = auth_handler.decode_token(token)
     return {"shanyraks": fav_list(username)}
+
+
+@app.delete("/auth/users/favorites/shanyraks/{id}")
+def delete_from_fav_list(token:Annotated[str, Depends(oauth2_scheme)], id: int = Path(..., description="Id of the ad that you want to delete from the favorite list")):
+    username = auth_handler.decode_token(token)
+    if delete_fav(username, id):
+        return {"message": "Successfully deleted!"}
+    else:
+        raise HTTPException(status_code=404, detail=f"Ad with such id and/or user_id doesn't exist")
+
 
 if __name__ == '__main__':
     # add_user("esil@.com", "8705", "password", "Beka", "Astana")
